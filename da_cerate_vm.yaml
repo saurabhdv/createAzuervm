@@ -1,0 +1,47 @@
+# to build Vm in azure under digital access 
+trigger:
+  none
+  
+pool:
+  vmImage: ubuntu-latest
+
+variables:
+  location: 'swedencentral'
+  subnetId: 'your_subnetId'
+  tag_department: 'test'
+  tag_sla: 'Standard'
+  tag_systemOwner: ''
+  tag_team: 'QA'
+  vmName: $(your-vm-name)
+  adminUsername: 'da'
+  adminPassword: $(password)
+  autoShutdown_Status: 'enabled'
+  autoShutdown_Time: '20:00'
+  autoShutdown_Time_Zone: 'UTC'
+  resource-group: 'your_resource-group'
+
+
+steps:
+
+- task: AzureCLI@2
+  inputs:
+    azureSubscription: 'your_azureSubscription'
+    scriptType: 'bash'
+    scriptLocation: 'inlineScript'
+    inlineScript: |
+      az deployment group create \
+        --resource-group $(resource-group) \
+        --template-file $(System.DefaultWorkingDirectory)/<PATH TO FILE>/create_vms.bicep \
+        --parameters vmName=$(vmName) \
+                     adminUsername=$(adminUsername) \
+                     adminPassword=$(adminPassword) \
+                     tag_date=$(Build.BuildId) \
+                     autoShutdown_Status=$(autoShutdown_Status) \
+                     autoShutdown_Time=$(autoShutdown_Time) \
+                     autoShutdown_Time_Zone=$(autoShutdown_Time_Zone)
+                     location=$(location) \
+                     subnetId=$(subnetId) \
+                     tag_department=$(tag_department) \
+                     tag_sla=$(tag_sla) \
+                     tag_systemOwner=$(tag_systemOwner) \
+                     tag_team=$(tag_team) \
